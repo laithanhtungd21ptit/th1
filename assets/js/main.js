@@ -3,6 +3,17 @@ const ctx = document.getElementById('iotChart').getContext('2d');
 let iotChart;
 
 // Hàm lấy dữ liệu từ MySQL thông qua API
+function formatDateTime(isoString) {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 async function fetchSensorData() {
     try {
         const response = await fetch("http://localhost:5000/api/data");
@@ -13,9 +24,9 @@ async function fetchSensorData() {
             return;
         }
 
-        // Tạo mảng dữ liệu
-        const hours = data.map(item => item.time);  
-        const temperatureData = data.map(item => item.temperature);
+        // Chuyển đổi thời gian sang định dạng mong muốn
+        const hours = data.map(item => formatDateTime(item.time));  
+        const temperatureData = data.map(item => item.temp);
         const humidityData = data.map(item => item.humidity);
         const lightData = data.map(item => item.light);
 
@@ -24,6 +35,7 @@ async function fetchSensorData() {
         console.error("Lỗi khi lấy dữ liệu từ MySQL:", error);
     }
 }
+
 
 // Hàm cập nhật biểu đồ
 function updateChart(hours, temperatureData, humidityData, lightData) {
