@@ -1,0 +1,14 @@
+
+.pagination button:hover:not(:disabled) {
+    background-color: #2563EB;
+}
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+tbody tr:hover {
+    background-color: #f1f5f9;
+}
+tbody tr:nth-child(even) {
+    background-color: #f8fafc;
+}

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+
+</head>
+<body class="bg-gray-100">
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="bg-blue-900 text-white w-1/6 min-h-screen flex flex-col items-center py-4">
+            <div class="mb-8">
+                <img alt="Logo" class="mb-2" height="50" src="/src/img/logo.jpg" width="50"/>
+                <h1 class="text-lg font-bold">IOT</h1>
+            </div>
+            <nav class="flex flex-col space-y-4">
+                <a class="flex items-center space-x-2 text-purple-500" href="dashboard.html">
+                    <i class="fas fa-home"></i>
+                    <span>Trang chủ</span>
+                </a>
+                <a class="flex items-center space-x-2" href="history.html">
+                    <i class="fas fa-history"></i>
+                    <span>Lịch sử</span>
+                </a>
+                <a class="flex items-center space-x-2" href="data.html">
+                    <i class="fas fa-database"></i>
+                    <span>Dữ liệu</span>
+                </a>
+                <a class="flex items-center space-x-2" href="profile.html">
+                    <i class="fas fa-user"></i>
+                    <span>Cá nhân</span>
+                </a>
+            </nav>
+        </div>
+        <!-- Main Content -->
+        <div class="flex-1 p-6">
+            <!-- Top Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Temperature Card -->
+               
+
+                <!-- Humidity Card -->
+                
+
+                <!-- Light Card -->
+                <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl p-6 shadow-lg transition-all hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div class="space-y-2">
+                            <h2 class="text-sm font-semibold uppercase tracking-widest">Nhiệt độ cao nhất</h2>
+                            <p class="text-4xl font-bold" id="tempCard">--<span class="text-xl ml-1">°C</span></p>
+                        </div>
+                        <div class="p-3 bg-white/20 rounded-full">
+                            <i class="fas fa-thermometer-three-quarters text-3xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Humidity Card -->
+                <div class="bg-gradient-to-br from-green-500 to-green-700 text-white rounded-xl p-6 shadow-lg transition-all hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div class="space-y-2">
+                            <h2 class="text-sm font-semibold uppercase tracking-widest">Độ ẩm cao nhất</h2>
+                            <p class="text-4xl font-bold" id="humidityCard">--<span class="text-xl ml-1">%</span></p>
+                        </div>
+                        <div class="p-3 bg-white/20 rounded-full">
+                            <i class="fas fa-tint text-3xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Light Card -->
+                <div class="bg-gradient-to-br from-purple-500 to-purple-700 text-white rounded-xl p-6 shadow-lg transition-all hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div class="space-y-2">
+                            <h2 class="text-sm font-semibold uppercase tracking-widest">Ánh sáng cao nhất</h2>
+                            <p class="text-4xl font-bold" id="lightCard">--<span class="text-xl ml-1">lux</span></p>
+                        </div>
+                        <div class="p-3 bg-white/20 rounded-full">
+                            <i class="fas fa-sun text-3xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Chart and Controls -->
+            <div class="flex">
+                <!-- Chart -->
+                <div class="bg-white rounded-lg p-4 w-3/4 mr-4">
+                    <h3 class="text-lg font-bold mb-4">Biểu đồ nhiệt độ, độ ẩm, ánh sáng</h3>
+                    <canvas id="iotChart"></canvas>
+                </div>
+                <!-- Device Controls -->
+                <div class="bg-white rounded-lg p-4 w-1/4">
+                    <h3 class="text-lg font-bold mb-4">THIẾT BỊ</h3>
+                    <div class="flex items-center mb-4">
+                        <div class="p-2 rounded-full text-white mr-2">
+                            <i id="light-icon" class="fas fa-lightbulb text-gray-500 text-3xl"></i>
+                        </div>
+                        <span class="flex-1">Đèn</span>
+                        <label class="switch">
+                            <input type="checkbox" id="lightSwitch">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center mb-4">
+                        <div class="p-2 rounded-full text-white mr-2">
+                            <i id="fan-icon" class="fas fa-fan text-gray-500 text-3xl"></i>
+                        </div>
+                        <span class="flex-1">Quạt</span>
+                        <label class="switch">
+                            <input type="checkbox" id="fanSwitch">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="p-2 rounded-full text-white mr-2">
+                            <i id="ac-icon" class="fas fa-wind text-gray-500 text-3xl"></i>
+                        </div>
+                        <span class="flex-1">Điều hòa</span>
+                        <label class="switch">
+                            <input type="checkbox" id="acSwitch">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+
+.sortable-header {
+    position: relative;
+    padding-right: 35px !important;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+
+.sort-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 20px;
+}
+
+.sort-icon.active {
+    color: #3b82f6;
+}
+
+.sort-hint {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: -10px 0 12px 8px;
+}
+
+#activeFilters span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 2px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    padding: 4px 8px;
+}
+
+#activeFilters span:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+#activeFilters span .close-btn {
+    cursor: pointer;
+    margin-left: 4px;
+    padding: 2px;
+}
+
+#activeFilters span .close-btn:hover {
+    color: #dc2626;
+}
+.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

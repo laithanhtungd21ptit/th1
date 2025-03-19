@@ -1,0 +1,139 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/css/data.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-gray-100">
+<div class="flex">
+    <!-- Sidebar -->
+    <div class="bg-blue-900 text-white w-1/6 min-h-screen flex flex-col items-center py-4">
+        <div class="mb-8">
+            <img alt="Logo" class="mb-2" height="50" src="/src/img/logo.jpg" width="50"/>
+            <h1 class="text-lg font-bold">IOT</h1>
+        </div>
+        <nav class="flex flex-col space-y-4">
+            <a class="flex items-center space-x-2" href="dashboard.html">
+                <i class="fas fa-home"></i>
+                <span>Trang chủ</span>
+            </a>
+            <a class="flex items-center space-x-2" href="history.html">
+                <i class="fas fa-history"></i>
+                <span>Lịch sử</span>
+            </a>
+            <a class="flex items-center space-x-2 text-purple-500" href="data.html">
+                <i class="fas fa-database"></i>
+                <span>Dữ liệu</span>
+            </a>
+            <a class="flex items-center space-x-2" href="profile.html">
+                <i class="fas fa-user"></i>
+                <span>Cá nhân</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+        <!-- Search Section -->
+        <!-- Bộ lọc tìm kiếm -->
+        <div class="bg-white rounded-lg p-4 mb-4">
+            <h2 class="text-2xl font-bold mb-4">Tìm kiếm</h2>
+            <div class="flex space-x-4">
+                <!-- Dropdown chọn loại dữ liệu -->
+                <select id="filterType" class="p-2 border rounded">
+                    
+                    <option value="temp">Nhiệt độ (°C)</option>
+                    <option value="humidity">Độ ẩm (%)</option>
+                    <option value="light">Ánh sáng (lux)</option>
+                </select>
+
+                <!-- Ô nhập giá trị -->
+                <input type="number" id="filterValue" class="p-2 border rounded" placeholder="Nhập giá trị">
+
+                <!-- Nút tìm kiếm -->
+                <button onclick="searchData()" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded">Tìm kiếm</button>
+
+                <!-- Nút xóa bộ lọc -->
+                <button onclick="resetFilters()" class="bg-gray-400 hover:bg-gray-500 text-white p-2 rounded">Xóa</button>
+            </div>
+        </div>
+
+
+
+        <!-- Data Table -->
+        <div class="bg-white rounded-lg p-4">
+
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-800 text-white">
+                <tr>
+                    <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('id')">
+                        <div class="relative">
+                            ID
+                            <span class="sort-icon">
+                                <i class="fas fa-sort"></i>
+                            </span>
+                        </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('temp')">
+                        <div class="relative">
+                            Nhiệt Độ
+                            <span class="sort-icon">
+                                <i class="fas fa-sort"></i>
+                            </span>
+                        </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('humidity')">
+                        <div class="relative">
+                            Độ ẩm
+                            <span class="sort-icon">
+                                <i class="fas fa-sort"></i>
+                            </span>
+                        </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('light')">
+                        <div class="relative">
+                            Ánh Sáng
+                            <span class="sort-icon">
+                                <i class="fas fa-sort"></i>
+                            </span>
+                        </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3">Thời Gian</th>
+                </tr>
+                </thead>
+                <tbody id="dataBody" class="bg-white divide-y divide-gray-200"></tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div class="flex justify-center items-center mt-4 space-x-4">
+                <button id="prevBtn" onclick="changePage(-1)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors disabled:opacity-50">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span id="pageInfo" class="text-gray-700 font-semibold">1 / 1</span>
+                <button id="nextBtn" onclick="changePage(1)" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors disabled:opacity-50">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="flex justify-between items-center mt-4">
+                <span id="recordInfo" class="text-gray-700 font-semibold">Trang đang hiển thị: 0/0 bản ghi</span>
+                <div class="flex items-center space-x-2">
+                    <span>Hiển thị:</span>
+                    <select id="recordsPerPage" class="p-2 border rounded" onchange="updateRecordsPerPage()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+<script src="/assets/js/data.js"></script>
+
+</body>
+</html>
