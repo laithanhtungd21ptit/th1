@@ -49,6 +49,7 @@
                     <option value="temp">Nhiệt độ (°C)</option>
                     <option value="humidity">Độ ẩm (%)</option>
                     <option value="light">Ánh sáng (lux)</option>
+                    <option value="wind">Gió (m/s)</option> <!-- Thêm tùy chọn Gió -->
                 </select>
 
                 <!-- Ô nhập giá trị -->
@@ -69,43 +70,53 @@
 
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-800 text-white">
-                <tr>
-                    <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('id')">
-                        <div class="relative">
-                            ID
-                            <span class="sort-icon">
-                                <i class="fas fa-sort"></i>
-                            </span>
-                        </div>
-                    </th>
-                    <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('temp')">
-                        <div class="relative">
-                            Nhiệt Độ
-                            <span class="sort-icon">
-                                <i class="fas fa-sort"></i>
-                            </span>
-                        </div>
-                    </th>
-                    <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('humidity')">
-                        <div class="relative">
-                            Độ ẩm
-                            <span class="sort-icon">
-                                <i class="fas fa-sort"></i>
-                            </span>
-                        </div>
-                    </th>
-                    <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('light')">
-                        <div class="relative">
-                            Ánh Sáng
-                            <span class="sort-icon">
-                                <i class="fas fa-sort"></i>
-                            </span>
-                        </div>
-                    </th>
-                    <th scope="col" class="px-6 py-3">Thời Gian</th>
-                </tr>
+                    <tr>
+                        <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('id')">
+                            <div class="relative">
+                                ID
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                </span>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('temp')">
+                            <div class="relative">
+                                Nhiệt Độ
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                </span>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('humidity')">
+                            <div class="relative">
+                                Độ ẩm
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                </span>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('light')">
+                            <div class="relative">
+                                Ánh Sáng
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                </span>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3 sortable-header" onclick="sortTable('wind')">
+                            <div class="relative">
+                                Gió
+                                <span class="sort-icon">
+                                    <i class="fas fa-sort"></i>
+                                </span>
+                            </div>
+                        </th>
+                        <th scope="col" class="px-6 py-3">Thời Gian</th>
+                    </tr>
                 </thead>
-                <tbody id="dataBody" class="bg-white divide-y divide-gray-200"></tbody>
+                <tbody id="dataBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Rows will be dynamically populated with formatted time -->
+                </tbody>
             </table>
 
             <!-- Pagination -->

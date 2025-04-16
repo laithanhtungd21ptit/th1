@@ -41,14 +41,8 @@
         <!-- Main Content -->
         <div class="flex-1 p-6">
             <!-- Top Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <!-- Temperature Card -->
-               
-
-                <!-- Humidity Card -->
-                
-
-                <!-- Light Card -->
                 <div class="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-xl p-6 shadow-lg transition-all hover:scale-105">
                     <div class="flex items-center justify-between">
                         <div class="space-y-2">
@@ -86,6 +80,19 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Wind Card -->
+                <div class="bg-gradient-to-br from-teal-500 to-teal-700 text-white rounded-xl p-6 shadow-lg transition-all hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div class="space-y-2">
+                            <h2 class="text-sm font-semibold uppercase tracking-widest">Gió cao nhất</h2>
+                            <p class="text-4xl font-bold" id="windCard">--<span class="text-xl ml-1">m/s</span></p>
+                        </div>
+                        <div class="p-3 bg-white/20 rounded-full">
+                            <i class="fas fa-wind text-3xl"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
             <!-- Chart and Controls -->
             <div class="flex">
@@ -117,7 +124,7 @@
                             <span class="slider round"></span>
                         </label>
                     </div>
-                    <div class="flex items-center">
+                    <div class="flex items-center mb-4">
                         <div class="p-2 rounded-full text-white mr-2">
                             <i id="ac-icon" class="fas fa-wind text-gray-500 text-3xl"></i>
                         </div>
@@ -127,7 +134,26 @@
                             <span class="slider round"></span>
                         </label>
                     </div>
-                    
+                    <div class="flex items-center">
+                        <div class="p-2 rounded-full text-white mr-2">
+                            <i id="light1-icon" class="fas fa-lightbulb text-gray-500 text-3xl"></i>
+                        </div>
+                        <span class="flex-1">Đèn 1</span>
+                        <label class="switch">
+                            <input type="checkbox" id="light1Switch">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center mt-4">
+                        <div class="p-2 rounded-full text-white mr-2">
+                            <i id="light2-icon" class="fas fa-lightbulb text-gray-500 text-3xl"></i>
+                        </div>
+                        <span class="flex-1">Đèn 2</span>
+                        <label class="switch">
+                            <input type="checkbox" id="light2Switch">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,146 +1,256 @@
+require('dotenv').config();
 const express = require("express");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise"); 
 const cors = require("cors");
 const path = require("path");
+const moment = require("moment");
+const morgan = require("morgan");
 
 const app = express();
-app.use(cors());
+
+// Middleware
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
+app.use(morgan('combined'));
 
-// Kết nối MySQL
-const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "18092003",
-    database: "sensor_data",
-    timezone: 'Z'
+// Database Configuration
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD, // Sửa lại từ DB_USER sang DB_PASSWORD
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 30000,
+    connectTimeout: 60000 // ✅ Giữ lại nếu cần
 });
 
-db.connect(err => {
-    if (err) {
-        console.error("Lỗi kết nối MySQL:", err);
-        return;
-    }
-    console.log("Đã kết nối MySQL!");
-});
-
-// Phục vụ file tĩnh (HTML, CSS, JS)
+// Serve static files
 app.use(express.static(__dirname));
 
-// Route mặc định để hiển thị dashboard.html
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "dashboard.html"));
-});
+// Routes
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "dashboard.html")));
 
-// API lấy toàn bộ dữ liệu cảm biến
-app.get("/api/data", (req, res) => {
-    db.query("SELECT * FROM sensor_data ORDER BY time DESC", (err, result) => {
-        if (err) {
-            res.status(500).json({ error: "Lỗi truy vấn MySQL" });
-        } else {
-            res.json(result);
-        }
+// Health Check Endpoint
+app.get('/health', async (req, res) => {
+  try {
+    const [result] = await pool.query('SELECT 1+1 AS result');
+    res.json({
+      status: 'healthy',
+      db_connection: result[0].result === 2 ? 'ok' : 'error',
+      uptime: process.uptime()
     });
+  } catch (error) {
+    res.status(500).json({ status: 'unhealthy' });
+  }
 });
 
-// API lấy lịch sử thiết bị
-// API lấy lịch sử thiết bị (sửa lại)
-app.get("/api/history", (req, res) => {
-    const { searchTime } = req.query;
+// Enhanced Sensor Data API
+app.get("/api/data", async (req, res) => {
+  try {
+    const { temp, humidity, light, page = 1, limit = 10 } = req.query;
+    const offset = (Math.max(1, parseInt(page)) - 1) * Math.min(100, parseInt(limit));
 
-    let query;
-    let params = [];
+    // Input validation
+    const numericParams = {};
+    if(temp && !isNaN(temp)) numericParams.temp = parseFloat(temp);
+    if(humidity && !isNaN(humidity)) numericParams.humidity = parseFloat(humidity);
+    if(light && !isNaN(light)) numericParams.light = parseInt(light);
+
+    let query = "SELECT * FROM sensor_data WHERE 1=1";
+    let countQuery = "SELECT COUNT(*) AS total FROM sensor_data WHERE 1=1";
+    const params = [];
+
+    Object.entries(numericParams).forEach(([key, value]) => {
+      query += ` AND ${key} = ?`;
+      countQuery += ` AND ${key} = ?`;
+      params.push(value);
+    });
+
+    query += " ORDER BY time DESC LIMIT ? OFFSET ?";
+    params.push(parseInt(limit), offset);
+
+    const [countResult, data] = await Promise.all([
+      pool.query(countQuery, params.slice(0, -2)),
+      pool.query(query, params)
+    ]);
+
+    res.json({
+      totalRecords: countResult[0][0].total,
+      totalPages: Math.ceil(countResult[0][0].total / parseInt(limit)),
+      currentPage: parseInt(page),
+      data: data[0]
+    });
+  } catch (error) {
+    console.error('Database Error:', error);
+    res.status(500).json({ 
+      error: "Database operation failed",
+      message: error.message
+    });
+  }
+});
+
+// Enhanced Device History API
+app.get("/api/history", async (req, res) => {
+  try {
+    const { searchTime, device, action, page = 1, limit = 10 } = req.query;
+    const offset = (Math.max(1, parseInt(page)) - 1) * Math.min(100, parseInt(limit));
+
+    let query = "SELECT * FROM device_history WHERE 1=1";
+    let countQuery = "SELECT COUNT(*) AS total FROM device_history WHERE 1=1";
+    const params = [];
 
     if (searchTime) {
-        // Xử lý tìm kiếm theo thời gian
-        const searchDate = new Date(searchTime);
-        if (isNaN(searchDate.getTime())) {
-            return res.status(400).json({ error: "Định dạng thời gian không hợp lệ" });
-        }
-
-        const startTime = new Date(searchDate);
-        startTime.setMilliseconds(0);
-        const endTime = new Date(searchDate);
-        endTime.setMilliseconds(999);
-
-        query = `
-            SELECT * 
-            FROM device_history 
-            WHERE time BETWEEN ? AND ?
-            ORDER BY time DESC
-        `;
-        params = [startTime, endTime];
-    } else {
-        // Lấy toàn bộ bản ghi nếu không có searchTime
-        query = "SELECT * FROM device_history ORDER BY time DESC";
+      const validDate = moment(searchTime, "YYYY-MM-DD HH:mm:ss", true);
+      if (!validDate.isValid()) {
+        return res.status(400).json({ error: "Invalid date format" });
+      }
+      const formattedTime = validDate.format("YYYY-MM-DD HH:mm:ss");
+      query += " AND time = ?";
+      countQuery += " AND time = ?";
+      params.push(formattedTime);
     }
 
-    db.query(query, params, (err, result) => {
-        if (err) {
-            console.error("Lỗi MySQL:", err);
-            return res.status(500).json({ 
-                error: "Lỗi database",
-                details: err.message 
-            });
-        }
-        res.json(result);
+    if (device) {
+      query += " AND device LIKE ?";
+      countQuery += " AND device LIKE ?";
+      params.push(`%${device}%`);
+    }
+
+    if (action) {
+      query += " AND action = ?";
+      countQuery += " AND action = ?";
+      params.push(action);
+    }
+
+    query += " ORDER BY time DESC LIMIT ? OFFSET ?";
+    params.push(parseInt(limit), offset);
+
+    const [countResult, rows] = await Promise.all([
+      pool.query(countQuery, params.slice(0, -2)),
+      pool.query(query, params)
+    ]);
+
+    res.json({
+      totalRecords: countResult[0][0].total,
+      totalPages: Math.ceil(countResult[0][0].total / parseInt(limit)),
+      currentPage: parseInt(page),
+      data: rows[0]
     });
+  } catch (error) {
+    console.error('Database Error:', error);
+    res.status(500).json({ 
+      error: "Database operation failed",
+      message: error.message
+    });
+  }
 });
 
-// app.get("/api/max-light", (req, res) => {
-//     const query = `SELECT MAX(light) AS max_light FROM sensor_data WHERE DATE(time) = CURDATE()`;
-    
-//     db.query(query, (err, result) => {
-//         if (err) {
-//             console.error("❌ Lỗi MySQL:", err.sqlMessage); // In lỗi chi tiết
-//             return res.status(500).json({ error: "Lỗi truy vấn MySQL", details: err.sqlMessage });
-//         }
-//         console.log("✅ Dữ liệu trả về:", result);
-//         res.json(result[0]); 
-//     });
-// });
-app.get("/api/max-values", (req, res) => {
+// Secure Sensor Data Submission
+app.post("/api/sensor-data", async (req, res) => {
+  try {
+    const { temperature, humidity, light, wind, api_key } = req.body;
+
+    // Enhanced validation
+    if (api_key !== process.env.API_KEY) {
+      console.warn('Unauthorized API attempt from:', req.ip);
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const errors = [];
+    if (!temperature || isNaN(temperature)) errors.push("Invalid temperature");
+    if (!humidity || isNaN(humidity)) errors.push("Invalid humidity");
+    if (!light || isNaN(light)) errors.push("Invalid light");
+    if (!wind || isNaN(wind)) errors.push("Invalid wind");
+
+    if (errors.length > 0) {
+      return res.status(400).json({ 
+        error: "Invalid sensor data",
+        details: errors
+      });
+    }
+
     const query = `
-        SELECT 
-            MAX(temp) AS max_temp, 
-            MAX(humidity) AS max_humidity, 
-            MAX(light) AS max_light 
-        FROM sensor_data 
-        WHERE DATE(time) = CURDATE()
+      INSERT INTO sensor_data 
+      (temp, humidity, light, wind, time) 
+      VALUES (?, ?, ?, ?, NOW())
     `;
 
-    db.query(query, (err, result) => {
-        if (err) {
-            console.error("Lỗi truy vấn MySQL:", err); // In lỗi chi tiết ra console
-            res.status(500).json({ error: "Lỗi truy vấn MySQL" });
-        } else {
-            res.json(result[0]); // Trả về giá trị lớn nhất trong ngày
-        }
-    });
-});
+    await pool.query(query, [
+      parseFloat(temperature),
+      parseFloat(humidity),
+      parseInt(light),
+      parseInt(wind)
+    ]);
 
-
-// API cập nhật trạng thái thiết bị
-app.post("/api/update-device", (req, res) => {
-    const { device, action } = req.body;
+    res.json({ status: "success" });
     
-    if (!device || action === undefined) {
-        return res.status(400).json({ error: "Thiếu dữ liệu" });
-    }
-
-    const query = `INSERT INTO device_history (device, action, time) VALUES (?, ?, NOW())`;
-
-    db.query(query, [device, action], (err, result) => {
-        if (err) {
-            res.status(500).json({ error: "Lỗi cập nhật thiết bị" });
-        } else {
-            res.json({ message: "Cập nhật thành công!" });
-        }
+  } catch (error) {
+    console.error('Database Insert Error:', error);
+    res.status(500).json({ 
+      error: "Database operation failed",
+      message: error.message
     });
+  }
 });
 
-// Khởi động server
-const PORT = 5000;
+// Max Values API
+app.get("/api/max-values", async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                MAX(temp) AS max_temp, 
+                MAX(humidity) AS max_humidity, 
+                MAX(light) AS max_light, 
+                MAX(wind) AS max_wind
+            FROM sensor_data 
+            WHERE DATE(time) = CURDATE()
+        `;
+        const [rows] = await pool.query(query);
+        res.json(rows[0]);
+    } catch (error) {
+        console.error("Error in /api/max-values:", error);
+        res.status(500).json({ error: "Database query failed" });
+    }
+});
+
+// Update Device Status API
+app.post("/api/update-device", async (req, res) => {
+    try {
+        const { device, action } = req.body;
+
+        if (!device || action === undefined) {
+            return res.status(400).json({ error: "Missing device or action data" });
+        }
+
+        const query = "INSERT INTO device_history (device, action, time) VALUES (?, ?, NOW())";
+        await pool.query(query, [device, action]);
+
+        res.json({ message: "Device status updated successfully!" });
+    } catch (error) {
+        console.error("Error in /api/update-device:", error);
+        res.status(500).json({ error: "Failed to update device status" });
+    }
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('Global Error Handler:', err);
+  res.status(500).json({
+    error: "Internal Server Error",
+    message: "Please try again later"
+  });
+});
+
+// Server Startup
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server đang chạy tại http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log('Environment:', process.env.NODE_ENV || 'development');
 });
